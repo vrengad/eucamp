@@ -4,6 +4,7 @@ import { DEFAULT_PACKING_ITEMS } from "./utils/defaultItems.js";
 import { FAMILIES } from "./utils/constants.js";
 import { initPacking, packingHeaderText, renderPacking } from "./tabs/packing.js";
 import { initTripInfo, renderTripInfo, tripInfoHeaderText, tripInfoLocationName } from "./tabs/tripInfo.js";
+import { initTripInfo, renderTripInfo, tripInfoHeaderText } from "./tabs/tripInfo.js";
 import { initSchedule, renderSchedule, scheduleHeaderText } from "./tabs/schedule.js";
 import { initEssentials, renderEssentials, essentialsHeaderText } from "./tabs/essentials.js";
 import { initExpenses, renderExpenses, expensesHeaderText } from "./tabs/expenses.js";
@@ -28,6 +29,7 @@ function renderApp() {
   const locationName = tripInfoLocationName();
   const locationSuffix = locationName ? ` · 📍 ${locationName}` : "";
   titleEl.textContent = `🏕️ Family Trip Organizer · ${tab.label}${locationSuffix}`;
+  titleEl.textContent = `🏕️ Family Trip Organizer · ${tab.label}`;
   subEl.textContent = tab.subtitle();
 
   tabsEl.innerHTML = tabs.map((item) => `

@@ -114,7 +114,7 @@ export function renderExpenses(container) {
     </section>
   `;
 
-  container.onclick = async (event) => {
+  container.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
     const role = button.dataset.role;
@@ -125,7 +125,7 @@ export function renderExpenses(container) {
       await del(`expenses/entries/${button.dataset.id}`);
       showToast("Expense deleted");
     }
-  };
+  });
 }
 
 export function expensesHeaderText() {

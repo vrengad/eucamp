@@ -5,9 +5,7 @@ A static, beginner-friendly family trip organizer hosted on GitHub Pages and bac
 ## Tabs
 
 1. **Packing**
-   - Quick inline add (fast single-item entry)
-   - Bulk add textarea (multi-line paste/import)
-   - Edit/delete existing items
+   - Add, edit, delete items
    - Family assignment/checking
    - Category chips and search
 2. **Trip Info**
@@ -102,22 +100,3 @@ Then open `http://localhost:8080`.
 ## GitHub Pages deploy
 
 No build step required. Publish directly from repository root.
-
-## Phase status
-
-- ✅ Phase 1: Existing code analyzed, target data model and file structure defined.
-- ✅ Phase 2: App refactored into modular multi-file architecture.
-- ✅ Phase 3: Tab navigation and Trip Info tab implemented.
-- ✅ Phase 4: Schedule and Essentials tabs implemented.
-- ✅ Phase 5: Expenses tab and settlement logic implemented.
-- ✅ Phase 6: Mobile-first styling improvements and documentation updates completed.
-
-## Packing entry UX
-
-- **Quick Add (inline):** add name/category/qty/note without opening a modal.
-- **Sticky category:** category remains selected after add for rapid repeated entry.
-- **Enter to add:** pressing Enter in the quick form submits immediately.
-- **Bulk Add:** paste many lines and save valid items in one action.
-  - Simple: `Milk`
-  - Rich: `Milk | Food | 2 bottles | buy before trip`
-- **Editing stays separate:** edit existing rows through the modal.

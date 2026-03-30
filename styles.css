@@ -107,46 +107,9 @@ body {
 .grid-form textarea, #modalBody textarea { min-height: 72px; resize: vertical; }
 .grid-form .full, .grid-form .actions { grid-column: 1 / -1; }
 .section-head { display: flex; justify-content: space-between; align-items: center; }
-.section-head h3 { margin: 0; }
 .totals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
 .settlement { margin-top: 10px; }
 .check-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-.quick-add-grid {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr 1.2fr 1.3fr auto;
-  gap: 8px;
-  margin-top: 10px;
-}
-.quick-add-grid input,
-.quick-add-grid select {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  font-family: inherit;
-}
-.bulk-panel {
-  margin-top: 10px;
-  border-top: 1px dashed #ddd;
-  padding-top: 10px;
-}
-.bulk-panel textarea {
-  width: 100%;
-  min-height: 120px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  font-family: inherit;
-}
-.bulk-actions {
-  margin-top: 8px;
-  display: flex;
-  gap: 8px;
-}
-.bulk-panel code {
-  background: #f3f3f3;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
 
 .fab {
   position: fixed;
@@ -205,7 +168,6 @@ body {
   .tabs-wrap { top: 64px; }
   .grid-form { grid-template-columns: 1fr; }
   .totals-grid { grid-template-columns: 1fr; }
-  .quick-add-grid { grid-template-columns: 1fr; }
   .item-row { flex-direction: column; align-items: flex-start; }
   .item-actions { justify-content: flex-start; }
 }

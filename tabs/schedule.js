@@ -114,6 +114,18 @@ export function renderSchedule(container) {
       }
     }
   };
+  container.addEventListener("click", async (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    const role = button.dataset.role;
+    if (role === "add") openEventModal();
+    if (role === "edit") openEventModal(button.dataset.id);
+    if (role === "delete") {
+      if (!window.confirm("Delete this event?")) return;
+      await del(`schedule/${button.dataset.id}`);
+      showToast("Event deleted");
+    }
+  });
 }
 
 export function scheduleHeaderText() {

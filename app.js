@@ -7,13 +7,15 @@ import { initTripInfo, renderTripInfo, tripInfoHeaderText } from "./tabs/tripInf
 import { initSchedule, renderSchedule, scheduleHeaderText } from "./tabs/schedule.js";
 import { initEssentials, renderEssentials, essentialsHeaderText } from "./tabs/essentials.js";
 import { initExpenses, renderExpenses, expensesHeaderText } from "./tabs/expenses.js";
+import { initSummary, renderSummary, summaryHeaderText } from "./tabs/summary.js";
 
 const tabs = [
   { id: "packing", label: "Packing", render: renderPacking, subtitle: packingHeaderText },
   { id: "tripInfo", label: "Trip Info", render: renderTripInfo, subtitle: tripInfoHeaderText },
   { id: "schedule", label: "Schedule", render: renderSchedule, subtitle: scheduleHeaderText },
   { id: "essentials", label: "Essentials", render: renderEssentials, subtitle: essentialsHeaderText },
-  { id: "expenses", label: "Expenses", render: renderExpenses, subtitle: expensesHeaderText }
+  { id: "expenses", label: "Expenses", render: renderExpenses, subtitle: expensesHeaderText },
+  { id: "summary", label: "📋 Summary", render: renderSummary, subtitle: summaryHeaderText }
 ];
 
 let activeTab = "packing";
@@ -62,6 +64,7 @@ async function bootstrap() {
     initSchedule(scheduleRender);
     initEssentials(scheduleRender);
     initExpenses(scheduleRender);
+    initSummary(scheduleRender);
 
     renderApp();
   } catch (err) {

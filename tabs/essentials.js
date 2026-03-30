@@ -61,7 +61,7 @@ export function renderEssentials(container) {
     `;
   }).join("");
 
-  container.addEventListener("click", async (event) => {
+  container.onclick = async (event) => {
     const btn = event.target.closest("button");
     if (!btn) return;
     const role = btn.dataset.role;
@@ -82,7 +82,7 @@ export function renderEssentials(container) {
       await patch(path, { [btn.dataset.family]: !current });
       showToast(!current ? "Marked done" : "Unchecked");
     }
-  });
+  };
 }
 
 export function essentialsHeaderText() {

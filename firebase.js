@@ -48,7 +48,10 @@ export function del(path) {
 }
 
 export async function read(path) {
-  const snap = await get(dbRef(path));
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("Firebase read timed out")), 10000)
+  );
+  const snap = await Promise.race([get(dbRef(path)), timeout]);
   return snap.val();
 }
 

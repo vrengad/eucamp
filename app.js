@@ -43,20 +43,32 @@ function renderApp() {
   });
 }
 
+let renderTimer;
+function scheduleRender() {
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(renderApp, 16);
+}
+
 async function bootstrap() {
-  initModal();
-  await ensurePackingData({
-    defaultItems: DEFAULT_PACKING_ITEMS,
-    familyIds: FAMILIES.map((family) => family.id)
-  });
+  try {
+    initModal();
+    await ensurePackingData({
+      defaultItems: DEFAULT_PACKING_ITEMS,
+      familyIds: FAMILIES.map((family) => family.id)
+    });
 
-  initPacking(renderApp);
-  initTripInfo(renderApp);
-  initSchedule(renderApp);
-  initEssentials(renderApp);
-  initExpenses(renderApp);
+    initPacking(scheduleRender);
+    initTripInfo(scheduleRender);
+    initSchedule(scheduleRender);
+    initEssentials(scheduleRender);
+    initExpenses(scheduleRender);
 
-  renderApp();
+    renderApp();
+  } catch (err) {
+    console.error("App failed to load:", err);
+    document.getElementById("content").innerHTML =
+      `<div class="loading">⚠️ Failed to load app. Please check your connection and refresh.<br><small>${err.message}</small></div>`;
+  }
 }
 
 bootstrap();

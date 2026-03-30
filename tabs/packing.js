@@ -192,7 +192,7 @@ export function renderPacking(container) {
     rerender();
   });
 
-  container.addEventListener("click", handleClick);
+  container.onclick = handleClick;
 }
 
 export function packingHeaderText() {

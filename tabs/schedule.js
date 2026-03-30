@@ -5,7 +5,6 @@ import { showToast } from "../components/toast.js";
 
 let events = {};
 let rerender = () => {};
-const deletingIds = new Set();
 
 export function initSchedule(renderFn) {
   rerender = renderFn;
@@ -88,32 +87,6 @@ export function renderSchedule(container) {
     }).join("") : `<div class="empty">No schedule events yet.</div>`}</section>
   `;
 
-  container.onclick = async (event) => {
-    const button = event.target.closest("button");
-    if (!button) return;
-    event.preventDefault();
-    const role = button.dataset.role;
-    if (role === "add") {
-      openEventModal();
-      return;
-    }
-    if (role === "edit") {
-      openEventModal(button.dataset.id);
-      return;
-    }
-    if (role === "delete") {
-      const id = button.dataset.id;
-      if (!id || deletingIds.has(id)) return;
-      if (!window.confirm("Delete this event?")) return;
-      deletingIds.add(id);
-      try {
-        await del(`schedule/${id}`);
-        showToast("Event deleted");
-      } finally {
-        deletingIds.delete(id);
-      }
-    }
-  };
   container.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;

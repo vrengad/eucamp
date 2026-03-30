@@ -35,6 +35,16 @@ export function add(path, payload) {
   return push(dbRef(path), payload);
 }
 
+export function addMany(path, payloads) {
+  const parent = dbRef(path);
+  const updates = {};
+  payloads.forEach((payload) => {
+    const itemRef = push(parent);
+    updates[itemRef.key] = payload;
+  });
+  return update(parent, updates);
+}
+
 export function patch(path, payload) {
   return update(dbRef(path), payload);
 }

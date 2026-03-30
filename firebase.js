@@ -5,7 +5,9 @@ import {
   onValue,
   update,
   push,
-  remove
+  remove,
+  set,
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -20,39 +22,80 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const itemsRef = ref(db, "items");
-const checksRef = ref(db, "checks");
 
-export function subscribeToItems(onData, onError) {
-  return onValue(itemsRef, onData, onError);
+function dbRef(path) {
+  return ref(db, path);
 }
 
-export function subscribeToChecks(onData, onError) {
-  return onValue(checksRef, onData, onError);
+export function subscribe(path, onData, onError) {
+  return onValue(dbRef(path), onData, onError);
 }
 
-export function addItemToDb(item) {
-  return push(itemsRef, item);
+export function add(path, payload) {
+  return push(dbRef(path), payload);
 }
 
-export function updateItemInDb(itemId, item) {
-  return update(ref(db, `items/${itemId}`), item);
+export function addMany(path, payloads) {
+  const parent = dbRef(path);
+  const updates = {};
+  payloads.forEach((payload) => {
+    const itemRef = push(parent);
+    updates[itemRef.key] = payload;
+  });
+  return update(parent, updates);
 }
 
-export function toggleFamilyCheck(itemId, familyIndex, currentValue) {
-  const key = `${itemId}_${familyIndex}`;
-  return update(checksRef, { [key]: !currentValue });
+export function patch(path, payload) {
+  return update(dbRef(path), payload);
 }
 
-export function deleteItemFromDb(itemId, familyCount) {
-  remove(ref(db, `items/${itemId}`));
-  const checkReset = {};
-  for (let fi = 0; fi < familyCount; fi += 1) {
-    checkReset[`${itemId}_${fi}`] = null;
+export function write(path, payload) {
+  return set(dbRef(path), payload);
+}
+
+export function del(path) {
+  return remove(dbRef(path));
+}
+
+export async function read(path) {
+  const snap = await get(dbRef(path));
+  return snap.val();
+}
+
+export async function ensurePackingData({ defaultItems, familyIds }) {
+  const newItems = await read("packing/items");
+  if (newItems && Object.keys(newItems).length) {
+    return;
   }
-  return update(checksRef, checkReset);
-}
 
-export function seedDefaultItems(defaultItems) {
-  defaultItems.forEach((item) => push(itemsRef, item));
+  const legacyItems = (await read("items")) || {};
+  const legacyChecks = (await read("checks")) || {};
+
+  if (Object.keys(legacyItems).length) {
+    await write("packing/items", Object.fromEntries(
+      Object.entries(legacyItems).map(([id, item]) => [id, {
+        name: item.name || "",
+        category: item.cat || item.category || "Other",
+        qty: item.qty || "",
+        note: item.note || "",
+        updatedAt: Date.now()
+      }])
+    ));
+
+    const migratedChecks = {};
+    Object.keys(legacyChecks).forEach((compound) => {
+      const [itemId, familyIndexRaw] = compound.split("_");
+      const familyIndex = Number(familyIndexRaw);
+      const familyId = familyIds[familyIndex];
+      if (!familyId) return;
+      if (!migratedChecks[itemId]) migratedChecks[itemId] = {};
+      migratedChecks[itemId][familyId] = !!legacyChecks[compound];
+    });
+    await write("packing/checks", migratedChecks);
+    return;
+  }
+
+  for (const item of defaultItems) {
+    await add("packing/items", { ...item, updatedAt: Date.now() });
+  }
 }

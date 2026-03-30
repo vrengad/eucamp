@@ -35,6 +35,15 @@ export function add(path, payload) {
   return push(dbRef(path), payload);
 }
 
+export async function addMany(path, items) {
+  const updates = {};
+  items.forEach((item) => {
+    const key = push(dbRef(path)).key;
+    updates[`${path}/${key}`] = item;
+  });
+  return update(ref(db), updates);
+}
+
 export function patch(path, payload) {
   return update(dbRef(path), payload);
 }

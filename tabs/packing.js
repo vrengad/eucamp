@@ -1,5 +1,6 @@
-import { add, del, patch, subscribe } from "../firebase.js";
+import { add, addMany, del, patch, subscribe } from "../firebase.js";
 import { CAT_ICONS, FAMILIES, PACKING_CATEGORIES } from "../utils/constants.js";
+import { parseBulkPackingLines } from "../utils/bulkParser.js";
 import { openModal, closeModal } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 
@@ -8,7 +9,10 @@ const state = {
   checks: {},
   activeCategory: "All",
   search: "",
-  connected: true
+  connected: true,
+  quickCategory: PACKING_CATEGORIES[0],
+  bulkOpen: false,
+  bulkText: ""
 };
 
 let rerender = () => {};
@@ -103,6 +107,34 @@ function progressCard() {
   `;
 }
 
+function quickAddCard() {
+  return `
+    <section class="card quick-add-card">
+      <div class="section-head">
+        <h3>Quick Add</h3>
+        <button class="mini-btn" data-role="toggle-bulk">${state.bulkOpen ? "Hide bulk" : "Bulk add"}</button>
+      </div>
+      <form id="quickAddForm" class="quick-add-row">
+        <input name="name" class="quick-add-input" placeholder="Item name (comma-separated for multiple)" required autocomplete="off" />
+        <select name="category" class="quick-add-cat">
+          ${PACKING_CATEGORIES.map((cat) => `<option value="${cat}" ${state.quickCategory === cat ? "selected" : ""}>${cat}</option>`).join("")}
+        </select>
+        <button class="primary quick-add-btn" type="submit">+</button>
+      </form>
+      ${state.bulkOpen ? `
+        <div class="bulk-panel">
+          <p class="muted">One item per line. Optional: <code>Name | Category | Qty | Note</code></p>
+          <textarea id="bulkText" class="bulk-textarea" placeholder="Milk\nBread | Food | 2L\nSunscreen | Hygiene">${state.bulkText}</textarea>
+          <div class="bulk-actions">
+            <button class="mini-btn" data-role="preview-bulk">Preview</button>
+            <button class="primary" data-role="save-bulk">Save items</button>
+          </div>
+        </div>
+      ` : ""}
+    </section>
+  `;
+}
+
 function openItemModal(itemId) {
   const item = itemId ? state.items[itemId] : null;
   openModal({
@@ -145,10 +177,65 @@ function openItemModal(itemId) {
   });
 }
 
+async function addQuickItem(formEl) {
+  const formData = new FormData(formEl);
+  const raw = (formData.get("name") || "").toString().trim();
+  const category = (formData.get("category") || state.quickCategory).toString();
+  if (!raw) {
+    showToast("Enter an item name");
+    return;
+  }
+
+  state.quickCategory = category;
+  const names = raw.split(",").map((s) => s.trim()).filter(Boolean);
+
+  if (names.length > 1) {
+    await addMany("packing/items", names.map((name) => ({
+      name, category, qty: "", note: "", updatedAt: Date.now()
+    })));
+    showToast(`Added ${names.length} items`);
+  } else {
+    await add("packing/items", {
+      name: names[0], category, qty: "", note: "", updatedAt: Date.now()
+    });
+    showToast(`Added: ${names[0]}`);
+  }
+
+  formEl.querySelector('input[name="name"]').value = "";
+  formEl.querySelector('input[name="name"]').focus();
+}
+
+async function saveBulk() {
+  const { valid, invalid } = parseBulkPackingLines(state.bulkText, state.quickCategory);
+  if (!valid.length) {
+    showToast(invalid.length ? `No valid items. Check line ${invalid[0].lineNo}.` : "Enter at least one line");
+    return;
+  }
+  await addMany("packing/items", valid.map((item) => ({ ...item, updatedAt: Date.now() })));
+  state.bulkText = "";
+  showToast(`Added ${valid.length} item${valid.length > 1 ? "s" : ""}${invalid.length ? `, skipped ${invalid.length}` : ""}`);
+  rerender();
+}
+
 async function handleClick(event) {
   const button = event.target.closest("button");
   if (!button) return;
   const role = button.dataset.role;
+
+  if (role === "toggle-bulk") {
+    state.bulkOpen = !state.bulkOpen;
+    rerender();
+    return;
+  }
+  if (role === "preview-bulk") {
+    const { valid, invalid } = parseBulkPackingLines(state.bulkText, state.quickCategory);
+    showToast(`Preview: ${valid.length} valid, ${invalid.length} invalid`);
+    return;
+  }
+  if (role === "save-bulk") {
+    await saveBulk();
+    return;
+  }
   if (role === "add-item") {
     openItemModal();
   } else if (role === "edit-item") {
@@ -170,6 +257,7 @@ async function handleClick(event) {
 export function renderPacking(container) {
   const categories = ["All", ...Array.from(new Set(Object.values(state.items).map((item) => item.category).filter(Boolean)))];
   container.innerHTML = `
+    ${quickAddCard()}
     <section class="toolbar card">
       <input id="packingSearch" class="search" placeholder="Search items..." value="${state.search}" />
       <div class="chips">${categories.map((cat) => `<button class="chip ${cat === state.activeCategory ? "active" : ""}" data-role="cat" data-cat="${cat}">${cat === "All" ? "All" : `${CAT_ICONS[cat] || "📦"} ${cat}`}</button>`).join("")}</div>
@@ -187,10 +275,28 @@ export function renderPacking(container) {
     });
   });
 
-  container.querySelector("#packingSearch").addEventListener("input", (event) => {
+  const searchEl = container.querySelector("#packingSearch");
+  searchEl.addEventListener("input", (event) => {
     state.search = event.target.value;
     rerender();
   });
+
+  const quickForm = container.querySelector("#quickAddForm");
+  quickForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await addQuickItem(quickForm);
+  });
+
+  quickForm.querySelector('select[name="category"]').addEventListener("change", (event) => {
+    state.quickCategory = event.target.value;
+  });
+
+  const bulkText = container.querySelector("#bulkText");
+  if (bulkText) {
+    bulkText.addEventListener("input", (event) => {
+      state.bulkText = event.target.value;
+    });
+  }
 
   container.onclick = handleClick;
 }

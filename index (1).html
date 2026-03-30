@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Camping List 🏕️</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
+  .header { background: #2E7D32; color: white; padding: 16px 16px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header-sub { font-size: 12px; opacity: 0.8; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+  .sync-dot.offline { background: #f44336; animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .sync-label { font-size: 11px; opacity: 0.9; display: flex; align-items: center; }
+  .progress-bar { height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin: 8px 0; }
+  .progress-fill { height: 100%; background: #A5D6A7; border-radius: 2px; transition: width 0.4s ease; }
+  .progress-label { font-size: 11px; opacity: 0.85; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .tabs-wrap { overflow-x: auto; scrollbar-width: none; background: white; border-bottom: 1px solid #e0e0e0; }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tabs { display: flex; gap: 6px; padding: 10px 16px; width: max-content; min-width: 100%; }
+  .tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1.5px solid #e0e0e0; background: white; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .tab.active { background: #2E7D32; color: white; border-color: #2E7D32; }
+  .legend { display: flex; gap: 8px; padding: 10px 16px; background: white; border-bottom: 1px solid #e0e0e0; overflow-x: auto; }
+  .legend-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { font-size: 12px; font-weight: 500; }
+  .content { padding: 12px 16px 100px; }
+  .category-section { margin-bottom: 20px; }
+  .category-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .items-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .item-row { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; transition: background 0.2s; }
+  .item-row:last-child { border-bottom: none; }
+  .item-row.all-done { background: #f1f8f1; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; color: #1a1a1a; }
+  .item-row.all-done .item-name { color: #2E7D32; text-decoration: line-through; }
+  .item-badges { display: flex; gap: 5px; margin-top: 3px; flex-wrap: wrap; }
+  .badge-qty { font-size: 11px; background: #f5f5f5; color: #666; padding: 1px 7px; border-radius: 10px; }
+  .badge-note { font-size: 11px; background: #FEF3C7; color: #92400E; padding: 1px 7px; border-radius: 10px; }
+  .family-checks { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
+  .family-btn { width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+  .family-btn:active { transform: scale(0.9); }
+  .delete-btn { width: 28px; height: 28px; border-radius: 6px; border: none; background: #ffeaea; color: #e53935; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+  .delete-btn:active { transform: scale(0.9); }
+  .fab { position: fixed; bottom: 82px; right: 20px; width: 52px; height: 52px; border-radius: 50%; background: #2E7D32; color: white; font-size: 26px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; transition: transform 0.15s; -webkit-tap-highlight-color: transparent; }
+  .fab:active { transform: scale(0.92); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: flex-end; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+  .modal label { font-size: 13px; color: #666; font-weight: 500; display: block; margin-bottom: 5px; }
+  .modal input, .modal select { width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; font-family: inherit; margin-bottom: 14px; outline: none; transition: border-color 0.15s; }
+  .modal input:focus, .modal select:focus { border-color: #2E7D32; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+  .btn-cancel { flex: 1; padding: 13px; border-radius: 10px; border: 1.5px solid #e0e0e0; background: white; font-size: 15px; font-weight: 500; color: #666; cursor: pointer; }
+  .btn-add { flex: 2; padding: 13px; border-radius: 10px; border: none; background: #2E7D32; color: white; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e8e8e8; padding: 10px 16px; display: flex; gap: 8px; z-index: 100; }
+  .stat-box { flex: 1; text-align: center; border-radius: 10px; padding: 8px 4px; }
+  .stat-num { font-size: 18px; font-weight: 600; }
+  .stat-label { font-size: 10px; font-weight: 500; margin-top: 1px; opacity: 0.75; }
+  .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: #888; font-size: 15px; flex-direction: column; gap: 12px; }
+  .spinner { width: 28px; height: 28px; border: 3px solid #e0e0e0; border-top-color: #2E7D32; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div><h1>🏕️ Camping List</h1><div class="header-sub" id="itemCount">Loading...</div></div>
+    <div class="sync-label"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Live</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label"><span id="progressText">Loading...</span><span id="progressPct" style="font-weight:600">0%</span></div>
+</div>
+<div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
+<div class="legend" id="legend"></div>
+<div class="content" id="content"><div class="loading"><div class="spinner"></div>Connecting...</div></div>
+<button class="fab" onclick="openModal()">+</button>
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <h2>Add new item</h2>
+    <label>Item name *</label>
+    <input id="newName" type="text" placeholder="e.g. Sunscreen" />
+    <label>Category *</label>
+    <select id="newCat">
+      <option value="">Select category...</option>
+      <option>Food</option><option>Kitchen</option><option>Kids</option>
+      <option>Health</option><option>Clothing</option><option>Hygiene</option>
+      <option>Camping Gear</option><option>Sleeping</option>
+      <option>Furniture</option><option>Electronics</option>
+    </select>
+    <label>Quantity / detail (optional)</label>
+    <input id="newQty" type="text" placeholder="e.g. 2 kg, 3 bottles..." />
+    <label>Notes (optional)</label>
+    <input id="newNote" type="text" placeholder="e.g. Buy before trip" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-add" onclick="addItem()">Add item</button>
+    </div>
+  </div>
+</div>
+<div class="footer" id="footer"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCIAUEznNiDHESrV1Qfe3XR9_80nzMeLrM",
+  authDomain: "camping-41fde.firebaseapp.com",
+  databaseURL: "https://camping-41fde-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "camping-41fde",
+  storageBucket: "camping-41fde.firebasestorage.app",
+  messagingSenderId: "716912113485",
+  appId: "1:716912113485:web:030e1ad8a80975b6c3e904"
+};
+
+const FAMILIES = ["KK VASU", "SRIDHAR VAISHU", "VEERA DURGA"];
+const FAMILY_SHORT = ["KK", "SR", "VR"];
+const FAMILY_COLORS = ["#2E7D32", "#1565C0", "#6A1B9A"];
+const FAMILY_BG = ["#E8F5E9", "#E3F2FD", "#F3E5F5"];
+const CAT_ICONS = {"Food":"🥗","Kitchen":"🍳","Kids":"🧸","Health":"💊","Clothing":"👕","Hygiene":"🧴","Camping Gear":"⛺","Sleeping":"🛏️","Furniture":"🪑","Electronics":"🔌"};
+
+const DEFAULT_ITEMS = [
+  {cat:"Food",name:"Curd",qty:"3",note:""},{cat:"Food",name:"Milk",qty:"",note:""},{cat:"Food",name:"Water",qty:"5 litres",note:""},{cat:"Food",name:"Eggs",qty:"30 + 10",note:""},{cat:"Food",name:"Mushroom",qty:"",note:""},{cat:"Food",name:"Nutella",qty:"",note:""},{cat:"Food",name:"Pindakaas",qty:"",note:""},{cat:"Food",name:"Kids curd",qty:"",note:""},{cat:"Food",name:"Bread",qty:"3",note:""},{cat:"Food",name:"Onion",qty:"",note:""},{cat:"Food",name:"Rice",qty:"3 kg",note:""},{cat:"Food",name:"Banana",qty:"",note:""},{cat:"Food",name:"Orange",qty:"",note:""},
+  {cat:"Kitchen",name:"Cooling box",qty:"",note:""},{cat:"Kitchen",name:"Plates",qty:"",note:""},{cat:"Kitchen",name:"Cups",qty:"",note:""},{cat:"Kitchen",name:"Knife",qty:"",note:""},{cat:"Kitchen",name:"Chopping board",qty:"",note:""},{cat:"Kitchen",name:"Dish drainer / rack",qty:"",note:"Confirm wording"},{cat:"Kitchen",name:"Sponge",qty:"",note:""},{cat:"Kitchen",name:"House cleaning brush",qty:"",note:""},
+  {cat:"Kids",name:"Toys",qty:"",note:""},
+  {cat:"Health",name:"Medicine",qty:"",note:""},{cat:"Health",name:"Tablets",qty:"",note:""},{cat:"Health",name:"Bandage",qty:"",note:""},{cat:"Health",name:"Cotton",qty:"",note:""},{cat:"Health",name:"Nasal spray",qty:"",note:""},{cat:"Health",name:"Mosquito repellent",qty:"",note:""},
+  {cat:"Clothing",name:"Umbrella",qty:"",note:""},{cat:"Clothing",name:"Rain cover / raincoat",qty:"",note:""},{cat:"Clothing",name:"Hairdryer",qty:"",note:""},{cat:"Clothing",name:"Dresses / clothes",qty:"",note:""},{cat:"Clothing",name:"Towels",qty:"",note:""},{cat:"Clothing",name:"Swimwear",qty:"",note:""},{cat:"Clothing",name:"Swimming gear",qty:"",note:""},{cat:"Clothing",name:"Bags for old clothes",qty:"",note:""},{cat:"Clothing",name:"Socks",qty:"",note:""},{cat:"Clothing",name:"Jackets",qty:"",note:""},{cat:"Clothing",name:"Head cover",qty:"",note:""},{cat:"Clothing",name:"Head cover (Wintersport)",qty:"",note:"Purchase item"},{cat:"Clothing",name:"Shoes",qty:"",note:""},{cat:"Clothing",name:"Crocs",qty:"",note:""},
+  {cat:"Hygiene",name:"Wet tissue",qty:"",note:""},{cat:"Hygiene",name:"Wet toilet paper",qty:"",note:""},{cat:"Hygiene",name:"Bath items",qty:"",note:""},{cat:"Hygiene",name:"Lotion",qty:"",note:""},
+  {cat:"Camping Gear",name:"Electric cables",qty:"",note:""},{cat:"Camping Gear",name:"Pump",qty:"",note:""},{cat:"Camping Gear",name:"Hammer",qty:"",note:""},{cat:"Camping Gear",name:"Gloves",qty:"",note:""},{cat:"Camping Gear",name:"Toilet box",qty:"",note:""},{cat:"Camping Gear",name:"Toilet paper",qty:"",note:""},{cat:"Camping Gear",name:"Dustbin cover",qty:"",note:""},{cat:"Camping Gear",name:"Inside mat",qty:"",note:""},{cat:"Camping Gear",name:"Outside mat",qty:"",note:""},
+  {cat:"Sleeping",name:"Bed sheets",qty:"",note:""},{cat:"Sleeping",name:"Pillows",qty:"",note:""},
+  {cat:"Furniture",name:"Chairs",qty:"",note:""},{cat:"Furniture",name:"Dressing case / basket",qty:"",note:"Confirm wording"},{cat:"Furniture",name:"Folding table",qty:"",note:""},
+  {cat:"Electronics",name:"Bluetooth speaker",qty:"",note:""},{cat:"Electronics",name:"Lights",qty:"",note:""},{cat:"Electronics",name:"Heater",qty:"",note:""}
+];
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const itemsRef = ref(db, "items");
+const checksRef = ref(db, "checks");
+
+let allItems = {};
+let checks = {};
+let activeCategory = "All";
+let itemsLoaded = false;
+
+document.getElementById("legend").innerHTML = FAMILIES.map((f,i) =>
+  `<div class="legend-item"><div class="legend-dot" style="background:${FAMILY_COLORS[i]}"></div><span class="legend-name" style="color:${FAMILY_COLORS[i]}">${f}</span></div>`
+).join("");
+
+onValue(itemsRef, (snap) => {
+  if (!snap.exists() && !itemsLoaded) {
+    DEFAULT_ITEMS.forEach(item => push(itemsRef, item));
+  }
+  itemsLoaded = true;
+  allItems = snap.val() || {};
+  renderAll();
+  document.getElementById("syncDot").className = "sync-dot";
+  document.getElementById("syncLabel").textContent = "Live";
+}, () => {
+  document.getElementById("syncDot").className = "sync-dot offline";
+  document.getElementById("syncLabel").textContent = "Offline";
+});
+
+onValue(checksRef, (snap) => { checks = snap.val() || {}; renderAll(); });
+
+function renderAll() { renderTabs(); renderItems(); updateProgress(); }
+
+function renderTabs() {
+  const cats = ["All", ...Array.from(new Set(Object.values(allItems).map(i => i.cat)))];
+  document.getElementById("tabs").innerHTML = cats.map(cat =>
+    `<button class="tab${cat === activeCategory ? " active" : ""}" onclick="setCategory('${cat}')">${cat === "All" ? "All" : `${CAT_ICONS[cat]||"📦"} ${cat}`}</button>`
+  ).join("");
+}
+
+window.setCategory = function(cat) { activeCategory = cat; renderAll(); };
+
+window.toggleCheck = function(itemId, fi) {
+  const key = `${itemId}_${fi}`;
+  update(checksRef, { [key]: !checks[key] });
+  showToast(!checks[key] ? `✓ ${FAMILIES[fi]} bringing this` : `${FAMILIES[fi]} unchecked`);
+};
+
+window.deleteItem = function(itemId) {
+  if (!confirm("Remove this item?")) return;
+  remove(ref(db, `items/${itemId}`));
+  const u = {};
+  FAMILIES.forEach((_,fi) => u[`${itemId}_${fi}`] = null);
+  update(checksRef, u);
+  showToast("Item removed");
+};
+
+function renderItems() {
+  const arr = Object.entries(allItems).map(([id,d]) => ({id,...d}));
+  const filtered = activeCategory === "All" ? arr : arr.filter(i => i.cat === activeCategory);
+  const grouped = {};
+  filtered.forEach(item => { if (!grouped[item.cat]) grouped[item.cat]=[]; grouped[item.cat].push(item); });
+  document.getElementById("itemCount").textContent = `3 families · ${arr.length} items`;
+  const content = document.getElementById("content");
+  if (!Object.keys(grouped).length) { content.innerHTML = `<div class="loading" style="height:120px;color:#aaa">No items — tap + to add one</div>`; return; }
+  content.innerHTML = Object.entries(grouped).map(([cat, items]) =>
+    `<div class="category-section">
+      <div class="category-header">${CAT_ICONS[cat]||"📦"} ${cat} <span style="opacity:0.5;font-weight:400">· ${items.length}</span></div>
+      <div class="items-card">${items.map(item => {
+        const fc = FAMILIES.map((_,fi) => !!checks[`${item.id}_${fi}`]);
+        const allDone = fc.every(Boolean);
+        return `<div class="item-row${allDone?" all-done":""}">
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-badges">
+              ${item.qty?`<span class="badge-qty">${item.qty}</span>`:""}
+              ${item.note?`<span class="badge-note">⚠ ${item.note}</span>`:""}
+            </div>
+          </div>
+          <div class="family-checks">
+            ${FAMILIES.map((_,fi) => {
+              const checked = fc[fi];
+              return `<button class="family-btn" style="background:${checked?FAMILY_COLORS[fi]:FAMILY_BG[fi]};color:${checked?"#fff":FAMILY_COLORS[fi]}" onclick="toggleCheck('${item.id}',${fi})">${checked?"✓":FAMILY_SHORT[fi]}</button>`;
+            }).join("")}
+            <button class="delete-btn" onclick="deleteItem('${item.id}')">✕</button>
+          </div>
+        </div>`;
+      }).join("")}</div>
+    </div>`
+  ).join("");
+}
+
+function updateProgress() {
+  const ids = Object.keys(allItems);
+  const total = ids.length;
+  if (!total) return;
+  const assigned = ids.filter(id => FAMILIES.some((_,fi) => checks[`${id}_${fi}`])).length;
+  const pct = Math.round((assigned/total)*100);
+  document.getElementById("progressFill").style.width = pct+"%";
+  document.getElementById("progressText").textContent = `${assigned} of ${total} items assigned`;
+  document.getElementById("progressPct").textContent = pct+"%";
+  const allSet = ids.filter(id => FAMILIES.every((_,fi) => checks[`${id}_${fi}`])).length;
+  document.getElementById("footer").innerHTML =
+    FAMILIES.map((f,fi) => {
+      const c = ids.filter(id => checks[`${id}_${fi}`]).length;
+      return `<div class="stat-box" style="background:${FAMILY_BG[fi]}"><div class="stat-num" style="color:${FAMILY_COLORS[fi]}">${c}</div><div class="stat-label" style="color:${FAMILY_COLORS[fi]}">${FAMILY_SHORT[fi]}</div></div>`;
+    }).join("") +
+    `<div class="stat-box" style="background:#f5f5f5"><div class="stat-num" style="color:#444">${allSet}</div><div class="stat-label" style="color:#666">all set</div></div>`;
+}
+
+window.openModal = () => { document.getElementById("modalOverlay").classList.add("open"); setTimeout(()=>document.getElementById("newName").focus(),300); };
+window.closeModal = () => {
+  document.getElementById("modalOverlay").classList.remove("open");
+  ["newName","newQty","newNote"].forEach(id => document.getElementById(id).value="");
+  document.getElementById("newCat").value="";
+};
+window.handleOverlayClick = (e) => { if(e.target===document.getElementById("modalOverlay")) closeModal(); };
+window.addItem = () => {
+  const name = document.getElementById("newName").value.trim();
+  const cat = document.getElementById("newCat").value;
+  if (!name) { document.getElementById("newName").style.borderColor="#e53935"; return; }
+  if (!cat) { document.getElementById("newCat").style.borderColor="#e53935"; return; }
+  push(itemsRef, { name, cat, qty: document.getElementById("newQty").value.trim(), note: document.getElementById("newNote").value.trim() });
+  closeModal(); activeCategory="All";
+  showToast(`✓ "${name}" added`);
+};
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+</script>
+</body>
+</html>

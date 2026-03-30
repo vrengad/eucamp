@@ -1,6 +1,8 @@
 import { add, addMany, del, patch, subscribe } from "../firebase.js";
 import { CAT_ICONS, FAMILIES, PACKING_CATEGORIES } from "../utils/constants.js";
 import { parseBulkPackingLines } from "../utils/bulkParser.js";
+import { add, del, patch, subscribe } from "../firebase.js";
+import { CAT_ICONS, FAMILIES, PACKING_CATEGORIES } from "../utils/constants.js";
 import { openModal, closeModal } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 
@@ -14,6 +16,7 @@ const state = {
   bulkOpen: false,
   bulkText: "",
   bulkFeedback: ""
+  connected: true
 };
 
 let rerender = () => {};
@@ -144,6 +147,11 @@ function openItemModal(itemId) {
   openModal({
     title: "Edit packing item",
     submitLabel: "Save",
+function openItemModal(itemId) {
+  const item = itemId ? state.items[itemId] : null;
+  openModal({
+    title: item ? "Edit packing item" : "Add packing item",
+    submitLabel: item ? "Save" : "Add",
     bodyHtml: `
       <label>Item name *</label>
       <input name="name" required value="${item?.name || ""}" />
@@ -171,6 +179,13 @@ function openItemModal(itemId) {
       }
       await patch(`packing/items/${itemId}`, payload);
       showToast("Item updated");
+      if (itemId) {
+        await patch(`packing/items/${itemId}`, payload);
+        showToast("Item updated");
+      } else {
+        await add("packing/items", payload);
+        showToast("Item added");
+      }
       closeModal();
     }
   });
@@ -247,6 +262,9 @@ async function handleClick(event) {
   }
 
   if (role === "edit-item") {
+  if (role === "add-item") {
+    openItemModal();
+  } else if (role === "edit-item") {
     openItemModal(button.dataset.itemId);
   } else if (role === "delete-item") {
     if (!window.confirm("Delete this item?")) return;
@@ -274,6 +292,16 @@ export function renderPacking(container) {
     </section>
     ${itemRows()}
   `;
+
+    <button class="fab" data-role="add-item" aria-label="Add packing item">+</button>
+  `;
+
+  container.querySelectorAll('[data-role="cat"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeCategory = btn.dataset.cat;
+      rerender();
+    });
+  });
 
   container.querySelector("#packingSearch").addEventListener("input", (event) => {
     state.search = event.target.value;
@@ -306,6 +334,7 @@ export function renderPacking(container) {
     }
     await handleClick(event);
   };
+  container.addEventListener("click", handleClick);
 }
 
 export function packingHeaderText() {

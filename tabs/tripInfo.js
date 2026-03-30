@@ -120,6 +120,10 @@ export function renderTripInfo(container) {
 
 export function tripInfoHeaderText() {
   return isEditing ? "Editing trip details" : "View trip details";
+}
+
+export function tripInfoLocationName() {
+  return (data.locationName || "").toString().trim();
 export function renderTripInfo(container) {
   container.innerHTML = `
     <section class="card form-card">

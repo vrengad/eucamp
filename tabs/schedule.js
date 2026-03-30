@@ -87,7 +87,7 @@ export function renderSchedule(container) {
     }).join("") : `<div class="empty">No schedule events yet.</div>`}</section>
   `;
 
-  container.addEventListener("click", async (event) => {
+  container.onclick = async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
     const role = button.dataset.role;
@@ -98,7 +98,7 @@ export function renderSchedule(container) {
       await del(`schedule/${button.dataset.id}`);
       showToast("Event deleted");
     }
-  });
+  };
 }
 
 export function scheduleHeaderText() {

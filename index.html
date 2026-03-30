@@ -3,54 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Camping List 🏕️</title>
+  <title>Family Trip Organizer 🏕️</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="header">
-    <div class="header-top">
-      <div><h1>🏕️ Camping List</h1><div class="header-sub" id="itemCount">Loading...</div></div>
-      <div class="sync-label"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Live</span></div>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="progress-label"><span id="progressText">Loading...</span><span id="progressPct" style="font-weight:600">0%</span></div>
-  </div>
+  <header class="header">
+    <h1 id="appTitle">🏕️ Family Trip Organizer</h1>
+    <div id="appSub" class="subtext">Loading...</div>
+  </header>
 
-  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
-  <div class="legend" id="legend"></div>
-  <div class="content" id="content"><div class="loading"><div class="spinner"></div>Connecting...</div></div>
+  <nav class="tabs-wrap">
+    <div class="tabs" id="tabs"></div>
+  </nav>
 
-  <button class="fab" type="button" onclick="openModal()" aria-label="Add new item">+</button>
+  <main class="content" id="content">
+    <div class="loading">Loading...</div>
+  </main>
 
-  <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-      <h2 id="modalTitle">Add new item</h2>
-      <label for="newName">Item name *</label>
-      <input id="newName" type="text" placeholder="e.g. Sunscreen" />
-
-      <label for="newCat">Category *</label>
-      <select id="newCat">
-        <option value="">Select category...</option>
-        <option>Food</option><option>Kitchen</option><option>Kids</option>
-        <option>Health</option><option>Clothing</option><option>Hygiene</option>
-        <option>Camping Gear</option><option>Sleeping</option>
-        <option>Furniture</option><option>Electronics</option>
-      </select>
-
-      <label for="newQty">Quantity / detail (optional)</label>
-      <input id="newQty" type="text" placeholder="e.g. 2 kg, 3 bottles..." />
-
-      <label for="newNote">Notes (optional)</label>
-      <input id="newNote" type="text" placeholder="e.g. Buy before trip" />
-
-      <div class="modal-btns">
-        <button class="btn btn-cancel" type="button" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-primary" id="saveItemBtn" type="button" onclick="saveItem()">Add item</button>
-      </div>
+      <h2 id="modalTitle">Modal</h2>
+      <form id="modalForm">
+        <div id="modalBody"></div>
+        <div class="modal-btns">
+          <button class="btn" type="button" id="modalCancelBtn">Cancel</button>
+          <button class="btn primary" type="submit" id="modalSubmitBtn">Save</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <div class="footer" id="footer"></div>
   <div class="toast" id="toast"></div>
 
   <script type="module" src="app.js"></script>

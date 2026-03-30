@@ -180,20 +180,19 @@ export function renderPacking(container) {
     <button class="fab" data-role="add-item" aria-label="Add packing item">+</button>
   `;
 
+  container.querySelectorAll('[data-role="cat"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeCategory = btn.dataset.cat;
+      rerender();
+    });
+  });
+
   container.querySelector("#packingSearch").addEventListener("input", (event) => {
     state.search = event.target.value;
     rerender();
   });
 
-  container.onclick = async (event) => {
-    const chip = event.target.closest('[data-role="cat"]');
-    if (chip) {
-      state.activeCategory = chip.dataset.cat;
-      rerender();
-      return;
-    }
-    await handleClick(event);
-  };
+  container.addEventListener("click", handleClick);
 }
 
 export function packingHeaderText() {

@@ -100,12 +100,3 @@ Then open `http://localhost:8080`.
 ## GitHub Pages deploy
 
 No build step required. Publish directly from repository root.
-
-## Phase status
-
-- ✅ Phase 1: Existing code analyzed, target data model and file structure defined.
-- ✅ Phase 2: App refactored into modular multi-file architecture.
-- ✅ Phase 3: Tab navigation and Trip Info tab implemented.
-- ✅ Phase 4: Schedule and Essentials tabs implemented.
-- ✅ Phase 5: Expenses tab and settlement logic implemented.
-- ✅ Phase 6: Mobile-first styling improvements and documentation updates completed.

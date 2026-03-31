@@ -89,7 +89,7 @@ function renderPackingBlock() {
       ${Object.entries(grouped).map(([cat, items]) => `
         <div class="summary-cat">
           <h4>${CAT_ICONS[cat] || "📦"} ${cat} <span class="muted">· ${items.length}</span></h4>
-          <div class="summary-list">
+          <div class="summary-list summary-list-columns">
             ${items.map((item) => {
               const assigned = FAMILIES.filter((f) => packingChecks[item.id]?.[f.id]).map((f) => f.short);
               return `<div class="summary-list-item">
@@ -174,11 +174,13 @@ export function renderSummary(container) {
         <h2 class="summary-title">Trip Summary</h2>
         <button class="primary no-print" data-role="print">🖨️ Print / PDF</button>
       </div>
-      ${renderTripBlock()}
-      ${renderScheduleBlock()}
-      ${renderPackingBlock()}
-      ${renderEssentialsBlock()}
-      ${renderExpensesBlock()}
+      <div class="summary-layout">
+        <div class="summary-layout-full">${renderTripBlock()}</div>
+        ${renderScheduleBlock()}
+        ${renderPackingBlock()}
+        ${renderEssentialsBlock()}
+        <div class="summary-layout-full">${renderExpensesBlock()}</div>
+      </div>
     </div>
   `;
 
